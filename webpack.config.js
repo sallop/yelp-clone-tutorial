@@ -45,12 +45,24 @@ config.plugins = [
   new webpack.DefinePlugin(defines)
 ].concat(config.plugins);
 
-
+// postcss
 config.postcss = [].concat([
   require('precss')({}),
   require('autoprefixer')({}),
   require('cssnano')({})
 ]);
+// END postcss
+
+// Roots
+config.resolve.root = [src, modules];
+config.resolve.alias = {
+  'css': join(src, 'styles'),
+  'containers': join(src, 'containers'),
+  'components': join(src, 'components'),
+  'utils': join(src, 'utils'),
+  'styles': join(src, 'styles')
+};
+// end Roots
 
  const cssModulesNames = `${isDev ? '[path][name]__[local]__':''}[hash:base64:5]`;
 const matchCssLoaders = /(^|!)(css-loader)($|!)/;
