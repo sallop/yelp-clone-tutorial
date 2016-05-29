@@ -1,4 +1,9 @@
+require('babel-register');
+
 const NODE_ENV = process.env.NODE_ENV;
+const isDev = NODE_ENV === 'development';
+const isTest = NODE_ENV === 'test';
+
 const dotenv = require('dotenv');
 
 const webpack = require('webpack');
@@ -13,8 +18,6 @@ const root = resolve(__dirname);
 const src = join(root, 'src');
 const modules = join(root, 'node_modules');
 const dest = join(root, 'dist');
-
-const isDev = NODE_ENV === 'development';
 
 var config = getConfig({
   isDev: isDev,
@@ -63,7 +66,6 @@ config.resolve.alias = {
   'styles': join(src, 'styles')
 };
 // end Roots
-
  const cssModulesNames = `${isDev ? '[path][name]__[local]__':''}[hash:base64:5]`;
 const matchCssLoaders = /(^|!)(css-loader)($|!)/;
 const findLoader = (loaders, match) => {
@@ -93,7 +95,35 @@ config.module.loaders.push({
   loader: 'style!css'
 });
 
-// ...
-console.log(config);
+// karma.
+// Moving our previous externals definition into this conditional statement.
+//config.externals = {
+//  'react/lib/ReactContext': true,
+//  'react/lib/ExecutionEnvironment': true
+//};
+
+// Testing
+if (isTest){
+  config.externals = {
+    'react/addons': true, // airbnb/enzime Using Enzyme with Webpack
+    'react/lib/ReactContext': true,
+    'react/lib/ExecutionEnvironment': true
+  };
+
+  // config.module.noParse = /\/sinon\.js/;
+  // config.resolve.alias['sinon'] = 'sinon/pkg/sinon';
+
+  config.plugins = config.plugins.filter(p => {
+    const name = p.constructor.toString();
+    const fnName = name.match(/^function (.*)\((.*\))/);
+    const idx = [
+      'DedupePlugin',
+      'UglifyJsPlugin'
+    ].indexOf(fnName[1]);
+    return idx < 0;
+  });
+}
+// End Testing
+
 
 module.exports = config;
